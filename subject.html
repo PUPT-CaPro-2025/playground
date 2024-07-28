@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>CLAS | Computer Laboratories Attendance System</title>
+
+    <!-- data table -->
+    <link rel="stylesheet" type="text/css" href="media/css/jquery.dataTables.css">
+    
+    <!-- default styles needed -->
+    <link href="assets/css/bootstrap.css" rel="stylesheet">
+    <link href="assets/font-awesome/css/font-awesome.css" rel="stylesheet" />
+    <link rel="stylesheet" type="text/css" href="assets/lineicons/style.css">    
+    <link href="assets/css/style.css" rel="stylesheet">
+    <link href="assets/css/style-responsive.css" rel="stylesheet">
+
+    <!-- style placed here because of datatables-->
+        <link rel="shortcut icon" href="images/favicon.ico">
+    <script language="javascript" type="text/javascript" href="js/jquery.js"></script>
+    <script language="javascript" type="text/javascript" src="assets/js/jquery-1.8.3.min.js"></script>
+    <script language="javascript" type="text/javascript" src="assets/js/bootstrap.min.js"></script>
+    
+    <link rel="stylesheet" type="text/css" href="modal/css/sweetalert.css">
+    <script type="text/javascript" src="modal/js/sweetalert-dev.js"></script>
+
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+      <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+
+  <BODY>
+<?php
+  include('connection.php');
+  session_start();
+
+
+if (!(isset($_SESSION['pic_password']) && $_SESSION['pic_password'] != '')) {
+
+header ("Location: index.php");
+
+}
+
+if (isset($_POST["submit"])) 
+  {
+    $subject_code = $_POST["subject_code"];
+    $subject_name = $_POST["subject_name"];
+    $query = mysql_query("SELECT * FROM tbl_subjects Where subject_code = '".$subject_code."'");
+    $num_rows = mysql_num_rows($query);
+    $result = mysql_fetch_row($query);
+
+      if( $_POST["subject_code"]== '' ||  $_POST["subject_code"] == '' )
+        {?>
+        <script type="text/javascript"> 
+          function run(){
+              swal("Oops...", "No fields should be blank.", "error");
+          }
+          <?php
+              echo "run();";
+          ?>
+          </script>
+
+      <?php }
+    else {      
+
+        if($num_rows > 0){ ?>
+          <script type="text/javascript">
+                  function run(){
+                      swal("Oops...", "Subject code is already existing!", "error");
+                  }
+
+                  <?php
+                       echo "run();";
+                  ?>
+              </script>
+        <?php }
+        else
+        {
+            //generateQrCode($student_num);
+            mysql_query ("INSERT INTO tbl_subjects VALUES ('".$subject_code."','".$subject_name."') ");
+        ?>
+            <script type="text/javascript">
+            function run(){
+                swal("Successfully Added!", "Data is save Successfully.", "success")
+            }
+            <?php
+                echo "run();";
+            ?>
+              </script>
+    <?php 
+        }
+      }
+    }
+
+?>
+
+  <section id="container" >
+  
+  <!-- **********************************************************************************************************************************************************
+  TOP BAR CONTENT & NOTIFICATIONS
+  *********************************************************************************************************************************************************** -->
+  <!--header start-->
+    <div>
+    <?php include('header.php');?>
+    </div>
+    <!--header end-->
+      
+    <!-- **********************************************************************************************************************************************************
+    MAIN SIDEBAR MENU
+    *********************************************************************************************************************************************************** -->
+    <!--sidebar start-->
+    <div>
+    <?php include('nav-admin.php');?>
+    </div>            
+    <!--sidebar end-->
+      
+    <!-- **********************************************************************************************************************************************************
+    MAIN CONTENT
+    *********************************************************************************************************************************************************** -->
+    <!--main content start-->
+   <section id="main-content">
+        <section class="wrapper">
+      <h3><i class="fa fa-database"></i> Create Subject</h3>
+      <div class="content-panel">
+      <a href="pic-subjects.php"><button class="btn btn-theme">Back</button></a>
+
+
+      <table id="todo" class="table table-hover custom-check">
+        <form action="<?php $_PHP_SELF ?>" method="POST">
+      <tbody>
+
+      <tr>
+        <td class="col-sm-3 col-sm-3 control-label">Subject Code:</td>
+        <td class="col-sm-10"><input required type="text" name = "subject_code" id="subject_code" class="form-control"></td>
+      </tr>
+
+
+      <tr>
+        <td class="col-sm-3 col-sm-3 control-label">Subject Description:</td>
+        <td class="col-sm-10"><input required type="text" name= "subject_name" id="subject_name" class="form-control"></td>
+      </tr>
+
+
+
+            <tr>
+              <td>
+              </td>
+              <td width="10%" class="tbl-data">
+                <button type="submit" name = "submit" id = "submit" class="btn btn-primary pull-right">Add Subject</button>
+              </td>
+              
+            </tr>
+
+
+      </tbody>
+    </form>
+      </table>
+      </div><br>
+
+
+
+    </section>
+  <!--main content end-->
+  
+
+<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+
+
+      
+  <!--main content end-->
+  
+  <!--footer start-->
+    <div>
+    <?php include('footer.php');?>
+    </div>
+  <!--footer end-->
+  </section>
+  
+  <!-- data tables -->
+  <script type="text/javascript" language="javascript" src="media/js/jquery.js"></script>
+  <script type="text/javascript" language="javascript" src="media/js/jquery.dataTables.js"></script>
+  <script type="text/javascript" language="javascript" class="init">$(document).ready(function() {$('#example').DataTable();} );</script>
+  
+  <!-- navigator menu dropdown-->
+  <script class="include" type="text/javascript" src="assets/js/jquery.dcjqaccordion.2.7.js"></script> 
+  
+    <!-- smooth scrollbar -->
+  <script src="assets/js/jquery.scrollTo.min.js"></script>
+    <script src="assets/js/jquery.nicescroll.js" type="text/javascript"></script>
+    
+  <!-- line graph -->
+  <!--
+  <script src="<?php echo base_url();?>assets/js/jquery.sparkline.js"></script>
+  -->
+  
+  <!--common script for all pages-->
+    <script src="assets/js/common-scripts.js"></script>
+  
+    <!-- notification -->
+  <!-- 
+  <script type="text/javascript" src="<?php echo base_url();?>assets/js/gritter/js/jquery.gritter.js"></script>
+    <script type="text/javascript" src="<?php echo base_url();?>assets/js/gritter-conf.js"></script>
+  -->
+    
+</BODY>
+</HTML>

@@ -1,0 +1,391 @@
+<!DOCTYPE html!>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>CLAS | Computer Laboratories Attendance System</title>
+
+    <!-- data table -->
+    <link rel="stylesheet" type="text/css" href="media/css/jquery.dataTables.css">
+    
+    <!-- default styles needed -->
+    <link href="assets/css/bootstrap.css" rel="stylesheet">
+    <link href="assets/font-awesome/css/font-awesome.css" rel="stylesheet" />
+    <link rel="stylesheet" type="text/css" href="assets/lineicons/style.css">    
+    <link href="assets/css/style.css" rel="stylesheet">
+    <link href="assets/css/style-responsive.css" rel="stylesheet">
+	<link href="assets/css/jquery.timepicker.min.css" rel="stylesheet">
+    <!-- style placed here because of datatables-->
+        <link rel="shortcut icon" href="images/favicon.ico">
+    <script language="javascript" type="text/javascript" href="js/jquery.js"></script>
+    <script language="javascript" type="text/javascript" src="assets/js/jquery-1.8.3.min.js"></script>
+    <script language="javascript" type="text/javascript" src="assets/js/bootstrap.min.js"></script>
+    
+    <link rel="stylesheet" type="text/css" href="modal/css/sweetalert.css">
+	
+    <script type="text/javascript" src="modal/js/sweetalert-dev.js"></script>
+
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+      <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+
+  <BODY>
+  <?php  
+  include('connection.php');
+  session_start();
+
+
+if (!(isset($_SESSION['pic_password']) && $_SESSION['pic_password'] != '')) {
+
+header ("Location: index.php");
+
+}
+  $subject_code = $_GET['id'];
+  
+  //dropdown section
+    $query_section = mysql_query("SELECT * FROM tbl_section ");
+
+    //dropdown professor
+    $query_professor = mysql_query("SELECT * FROM tbl_professors ");
+  
+  //dropdown days
+  $query_days = mysql_query("SELECT * FROM tbl_days");
+
+    $query_subject = mysql_query("SELECT * FROM tbl_subjects Where subject_code = '$subject_code' ");
+    $row_subject = mysql_fetch_array($query_subject);
+
+    if(isset($_POST['addSchedule'])){
+
+     $section = $_POST["section"];
+      $professor = $_POST["professor"];
+      $day = $_POST["days"];
+      $startTime = $_POST['startTime'];
+      $endTime = $_POST['endTime'];
+    $room = $_POST['destination'];
+	$remarks = $_POST['remarks'];
+	$sem = $_POST['semester'];
+	$schoolYear= $_POST['schoolYear'];
+      if($_POST["days"] == ''|| $_POST["startTime"] == '' || $_POST['endTime'] == '' || $_POST['section'] == '0' || $_POST['professor'] == '0'  )
+        {?>
+        <script type="text/javascript"> 
+          function run(){
+              swal("Oops...", "No fields should be blank.", "error");
+          }
+          <?php
+              echo "run();";
+          ?>
+          </script>
+
+      <?php }
+      else{
+		  
+		  if($remarks =='Make-Up Class'){
+			  
+			  mysql_query ("INSERT INTO tbl_schedule VALUES ('','".$row_subject['subject_code']."','".$section."','".$startTime."','".$endTime."','".$day."','".$room."','".$professor."','".$remarks."','".$sem."') "); 
+			  $schedid = mysql_query("SELECT schedule_id FROM tbl_schedule WHERE subject_code = '".$row_subject['subject_code']."' AND section_id = '".$section."' AND schedule_start_time = '".$startTime."' AND schedule_end_time = '".$endTime."' AND schedule_day = '".$day."' AND Lab_used = '".$room."' AND professor = '".$professor."' AND Remarks = '".$remarks."' AND Semester = '".$sem."' ");
+			  $idsched = mysql_fetch_array($schedid);
+			  $scheds = $idsched['schedule_id'];
+			  $make = mysql_query("SELECT t1.student_num FROM tbl_studenttag as t1 INNER JOIN tbl_schedule as t2 ON t1.schedule_id = t2.schedule_id WHERE t2.professor = '".$professor."' AND t2.Lab_used = '".$room."' AND t2.section_id = '".$section."' AND t2.Semester = '".$sem."'");
+			  while($up = mysql_fetch_assoc($make))
+			  {
+				  mysql_query("INSERT INTO tbl_studenttag (student_num,schedule_id) VALUES ('".$up['student_num']."','".$scheds."' )");
+				  
+			  }
+			  
+			   ?>
+
+					<script type="text/javascript">
+					function run(){
+						swal("Successfully Added!", "Data is save Successfully.", "success")
+					}
+					<?php
+						echo "run();";
+					?>
+					  </script>
+
+				  <?php 
+			  
+			  
+		  }
+		  
+		  else
+		  {
+			  
+					  $schedule_checking = mysql_query("SELECT * FROM tbl_schedule Where schedule_start_time = '$startTime' AND schedule_end_time = '$endTime' AND schedule_day = '$day'");
+				$num_rows = mysql_num_rows($schedule_checking);
+				if($num_rows == 1)
+				{ ?>
+				  <script type="text/javascript"> 
+				  function run(){
+					  swal("Saving Error!", "Please choose another time and day.", "error");
+				  }
+				  <?php
+					  echo "run();";
+				  ?>
+					</script>
+
+				<?php }
+				else{
+				  mysql_query ("INSERT INTO tbl_schedule VALUES ('','".$row_subject['subject_code']."','".$section."','".$startTime."','".$endTime."','".$day."','".$room."','".$professor."','".$remarks."','".$sem."','".$schoolYear."') "); 
+				  
+				  ?>
+
+					<script type="text/javascript">
+					function run(){
+						swal("Successfully Added!", "Data is save Successfully.", "success")
+					}
+					<?php
+						echo "run();";
+					?>
+					  </script>
+
+				  <?php 
+				} 
+			  
+		  }
+
+        
+      }
+        
+    }
+
+?>
+
+  <section id="container" >
+  
+  <!-- **********************************************************************************************************************************************************
+  TOP BAR CONTENT & NOTIFICATIONS
+  *********************************************************************************************************************************************************** -->
+  <!--header start-->
+    <div>
+    <?php include('header.php');?>
+    </div>
+    <!--header end-->
+      
+    <!-- **********************************************************************************************************************************************************
+    MAIN SIDEBAR MENU
+    *********************************************************************************************************************************************************** -->
+    <!--sidebar start-->
+    <div>
+    <?php include('nav-admin.php');?>
+    </div>            
+    <!--sidebar end-->
+      
+    <!-- **********************************************************************************************************************************************************
+    MAIN CONTENT
+    *********************************************************************************************************************************************************** -->
+    <!--main content start-->
+   <section id="main-content">
+        <section class="wrapper">
+      <h3><i class="fa fa-database"></i> Create New Schedule</h3>
+      <div class="content-panel">
+      <a href="pic-schedule.php"><button class="btn btn-theme">Back</button></a>
+      <h4>Subject Code :
+      <td width="40%" class="tbl-data"> <?php echo $row_subject['subject_code']; ?> </td>
+      </h4>
+      <h4>Subject Description :
+      <td width="15%" class="tbl-data"> <?php echo $row_subject['subject_name']; ?> </td>
+	  <a href="listofschedpersubj.php?id=<?php echo $subject_code; ?>"><button class="btn btn-theme"  style="float: right; margin-bottom: 7px;">View List of Schedule for this Subject</button></a>	
+      </h4>
+	  <h4>Reminder! For scheduling of Make-Up Class. Please make sure that the Professor. Laboratory Room, Section and Semester are the same as the Regular Class.
+      </h4>
+
+
+
+      <table id="todo" class="table table-hover custom-check">
+        <form action="<?php $_PHP_SELF ?>" method="POST">
+      <tbody>
+      <tr>
+        <td class="col-sm-3 col-sm-3 control-label">Section:</td>
+        <td class="col-sm-10">
+          <select name = "section" id = "section" class="form-control" >
+          <option value = "0">Select Section</option>
+                  <?php 
+                      while($row_section = mysql_fetch_assoc($query_section)) { ?>
+                  ?> 
+                  <option value = "<?php echo $row_section['section_id']; ?>">
+                    <?php echo $row_section['Course']." ".$row_section['year_section'];?>
+                  </option>
+                  <?php }?>
+
+          </select>
+        </td>
+      </tr>
+
+            <tr>
+              <td width="10%" class="tbl-data">
+                <label> Start Time </label>
+              </td>
+              <td width="10%" class="tbl-data">
+                <input type = "time" class="timepicker" name = "startTime" id = "startTime"/>
+              </td>
+            </tr>
+
+
+            <tr>
+              <td width="10%" class="tbl-data">
+                <label> End Time </label>
+              </td>
+              <td width="10%" class="tbl-data">
+                <input type = "time" class="timepicker" name = "endTime" id = "endTime"/>
+              </td>
+            </tr>
+
+      <tr>
+        <td class="col-sm-3 col-sm-3 control-label">Schedule Day:</td>
+        <td class="col-sm-10">
+          <select name = "days" id = "days" class="form-control" >
+          <?php 
+                      while($row_section = mysql_fetch_assoc($query_days)) { ?>
+                  ?> 
+                  <option value = "<?php echo $row_section['Days']; ?>">
+                    <?php echo $row_section['Days'];?>
+                  </option>
+                  <?php }?>
+
+          </select>
+        </td>
+      </tr>
+
+
+
+      <tr>
+        <td class="col-sm-3 col-sm-3 control-label">Laboratory Room:</td>
+        <td class="col-sm-10">
+                <select name = "destination" id = "destination" class="form-control" >
+                  <option value = "dost"> DOST Laboratory </option>
+                  <option value = "aboi"> Aboitiz Laboratory </option>
+                </select>
+
+        </td>
+      </tr>
+	   <tr>
+        <td class="col-sm-3 col-sm-3 control-label">Remarks:</td>
+        <td class="col-sm-10">
+                <select name = "remarks" id = "remarks" class="form-control" >
+                  <option value = "Regular Class"> Regular Class </option>
+                  <option value = "Make-Up Class"> Make-Up Class </option>
+                </select>
+
+        </td>
+      </tr>
+	  
+        <td class="col-sm-3 col-sm-3 control-label">Assign Professor:</td>
+        <td class="col-sm-10">
+          <select name = "professor" id = "professor" class="form-control" >
+         <?php 
+                      while($row_professor = mysql_fetch_assoc($query_professor)) { ?>
+                  ?> 
+                  <option value = "<?php echo $row_professor['FacultyCode']; ?>">
+                    <?php echo $row_professor['FacultyName'];?>
+                  </option>
+                  <?php }?>
+          </select>
+        </td>
+      </tr>
+	   <tr>
+        <td class="col-sm-3 col-sm-3 control-label">Semester:</td>
+        <td class="col-sm-10">
+                <select name = "semester" id = "semester" class="form-control" >
+                  <option value = "1st Semester"> 1st Semester </option>
+                  <option value = "2nd Semester"> 2nd Semester </option>
+				  <option value = "Summer Semester"> Summer Semester </option>
+                </select>
+
+        </td>
+		</tr>
+		<tr>
+        <td class="col-sm-3 col-sm-3 control-label">School Year</td>
+        <td class="col-sm-10">
+                <select name = "schoolYear" id = "schoolYear" class="form-control" >
+                  <option>2017</option>
+                  <option>2017-2018</option>
+                </select>
+
+        </td>
+		</tr>
+            <tr>
+              <td>
+              </td>
+              <td width="10%" class="tbl-data">
+                <button type="submit" name ="addSchedule" id ="addSchedule" class="btn btn-primary pull-right">Add Schedule</button>
+              </td>
+              
+            </tr>
+
+		
+      </tbody>
+    </form>
+      </table>
+      </div><br>
+
+
+
+    </section>
+  <!--main content end-->
+  
+
+
+
+
+      
+  <!--main content end-->
+  
+  <!--footer start-->
+    <div>
+    <?php include('footer.php');?>
+    </div>
+  <!--footer end-->
+  </section>
+  
+  <!-- data tables -->
+  <script type="text/javascript" language="javascript" src="media/js/jquery.js"></script>
+  <script type="text/javascript" language="javascript" src="media/js/jquery.dataTables.js"></script>
+  <script type="text/javascript" language="javascript" class="init">$(document).ready(function() {$('#example').DataTable();} );</script>
+  <script type="text/javascript" language="javascript" src="media/js/jquery.dataTables.js"></script>
+  <!-- navigator menu dropdown-->
+	<script class="include" type="text/javascript" src="assets/js/jquery.timepicker.min.js"></script> 
+
+	<script type="text/javascript">
+	$(document).ready(function(){
+	$('.timepicker').timepicker({
+    timeFormat: 'HH:mm:ss',
+    interval: 30,
+    minTime: '07:30:00',
+    maxTime: '21:00:00',
+    defaultTime: '07:30',
+    startTime: '07:30',
+    dynamic: false,
+    dropdown: true,
+    scrollbar: true
+});
+});
+	</script>
+
+
+
+  
+    <!-- smooth scrollbar -->
+  <script src="assets/js/jquery.scrollTo.min.js"></script>
+    <script src="assets/js/jquery.nicescroll.js" type="text/javascript"></script>
+  
+  <!-- line graph -->
+  <!--
+  <script src="<?php echo base_url();?>assets/js/jquery.sparkline.js"></script>
+  -->
+  
+  <!--common script for all pages-->
+    <script src="assets/js/common-scripts.js"></script>
+  
+    <!-- notification -->
+  <!-- 
+  <script type="text/javascript" src="<?php echo base_url();?>assets/js/gritter/js/jquery.gritter.js"></script>
+    <script type="text/javascript" src="<?php echo base_url();?>assets/js/gritter-conf.js"></script>
+  -->
+    
+</BODY>
+</HTML>

@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>CLAS | Computer Laboratories Attendance System</title>
+
+    <!-- data table -->
+    <link rel="stylesheet" type="text/css" href="media/css/jquery.dataTables.css">
+    
+    <!-- default styles needed -->
+    <link href="assets/css/bootstrap.css" rel="stylesheet">
+    <link href="assets/font-awesome/css/font-awesome.css" rel="stylesheet" />
+    <link rel="stylesheet" type="text/css" href="assets/lineicons/style.css">    
+    <link href="assets/css/style.css" rel="stylesheet">
+    <link href="assets/css/style-responsive.css" rel="stylesheet">
+
+    <!-- style placed here because of datatables-->
+        <link rel="shortcut icon" href="images/favicon.ico">
+    <script language="javascript" type="text/javascript" href="js/jquery.js"></script>
+    <script language="javascript" type="text/javascript" src="assets/js/jquery-1.8.3.min.js"></script>
+    <script language="javascript" type="text/javascript" src="assets/js/bootstrap.min.js"></script>
+    
+    <link rel="stylesheet" type="text/css" href="modal/css/sweetalert.css">
+    <script type="text/javascript" src="modal/js/sweetalert-dev.js"></script>
+
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+      <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+
+  <BODY>
+<?php
+  include('connection.php');
+  session_start();
+
+$id = $_GET['id'];
+if (isset($_POST["save"])) 
+      {
+        
+        $student_num = $_POST["stud_num"];
+        //$stud_num2 = substr($stud_num,1,-1);
+        $batchnumber = $_POST["batchnumber"];
+        $pcnumber = $_POST["pcnumber"];
+        if($student_num != null && $pcnumber != null && $batchnumber != null  )
+        {
+        //validation if the student is existing on the schedule
+        $query_stud = mysql_query("SELECT * FROM tbl_studenttag Where student_num = '$student_num' AND schedule_id = '$id' ");
+        $num_rows = mysql_num_rows($query_stud);
+        
+        
+        
+        if($num_rows == 0){ ?>
+          <script type="text/javascript">
+                  function run(){
+                      swal("Oops...", "Student is not a student on this subject.", "error");
+                  }
+
+                  <?php
+                       echo "run();";
+                  ?>
+              </script>
+        <?php }
+        else {
+          
+          $query_stud2 = mysql_query("SELECT * FROM tbl_pcbatchtag Where student_number = '$student_num' AND schedule_id = '$id' ");
+          $num_rows2 = mysql_num_rows($query_stud2);
+          
+          if($num_rows2 == 1){
+                  ?>
+                <script type="text/javascript">
+                  function run1(){
+                    swal("Oops...", "Student has already registered a Batch/PC Number.", "error");
+                  }
+
+                  <?php
+                     echo "run1();";
+                  ?>
+                </script>
+              <?php
+          }
+          else{
+             mysql_query ("INSERT INTO tbl_pcbatchtag(student_number,pc_number,batch_number,schedule_id,flag) VALUES ('".$student_num."','".$pcnumber."','".$batchnumber."','".$id."',0) "); ?>
+
+           <script type="text/javascript">
+                  function run(){
+                      swal("Success", "Successfully Add!", "success");
+                  }
+
+                  <?php
+                       echo "run();";
+                  ?>
+              </script>
+
+        <?php 
+          }
+          
+          
+        }
+        
+        
+        
+        
+        }
+        else
+        {
+          ?>
+          <script type="text/javascript">
+                  function run(){
+                      swal("Error", "No field must be blank!", "error");
+                  }
+
+                  <?php
+                       echo "run();";
+                  ?>
+              </script>
+
+        <?php
+        }
+      } 
+    
+?>
+
+  <section id="container" >
+  
+  <!-- **********************************************************************************************************************************************************
+  TOP BAR CONTENT & NOTIFICATIONS
+  *********************************************************************************************************************************************************** -->
+  <!--header start-->
+    <div>
+    <?php include('header.php');?>
+    </div>
+    <!--header end-->
+      
+    <!-- **********************************************************************************************************************************************************
+    MAIN SIDEBAR MENU
+    *********************************************************************************************************************************************************** -->
+    <!--sidebar start-->
+    <div>
+    <?php include('nav-prof2.php');?>
+    </div>            
+    <!--sidebar end-->
+      
+    <!-- **********************************************************************************************************************************************************
+    MAIN CONTENT
+    *********************************************************************************************************************************************************** -->
+    <!--main content start-->
+   <section id="main-content">
+        <section class="wrapper">
+      <h3><i class="fa fa-database"></i> Tagging Batch Number and  PC Number</h3>
+      <div class="content-panel">
+      <a href="prof-pcbatch.php"><button class="btn btn-theme">Back</button></a>
+
+
+      <table id="todo" class="table table-hover custom-check">
+        <form action="<?php $_PHP_SELF ?>" method="POST">
+      <tbody>
+
+
+
+      <tr>
+        <td class="col-sm-3 col-sm-3 control-label">Student Number:</td>
+        <td class="col-sm-10"><input required type="text" placeholder = "e.g 2011-00000-TG-0"  name = "stud_num" id="stud_num" class="form-control"></td>
+      </tr>
+
+      <tr>
+        <td class="col-sm-3 col-sm-3 control-label">Batch Number:</td>
+        <td class="col-sm-10"><input required type="number" placeholder = "Batch Number" name = "batchnumber" id="name" class="form-control"></td>
+      </tr>
+
+      <tr>
+        <td class="col-sm-3 col-sm-3 control-label">PC Number:</td>
+        <td class="col-sm-10"><input required type="number" placeholder = "PC Number" name = "pcnumber" id="name" class="form-control"></td>
+      </tr>
+
+            <tr>
+              <td>
+              </td>
+              <td width="10%" class="tbl-data">
+                <button type="submit" name = "save" id = "save" class="btn btn-primary pull-right">Save/Tag</button>
+              </td>
+              
+            </tr>
+
+
+      </tbody>
+    </form>
+      </table>
+      </div><br>
+
+
+
+    </section>
+  <!--main content end-->
+  
+
+<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+
+
+      
+  <!--main content end-->
+  
+  <!--footer start-->
+    <div>
+    <?php include('footer.php');?>
+    </div>
+  <!--footer end-->
+  </section>
+  
+  <!-- data tables -->
+  <script type="text/javascript" language="javascript" src="media/js/jquery.js"></script>
+  <script type="text/javascript" language="javascript" src="media/js/jquery.dataTables.js"></script>
+  <script type="text/javascript" language="javascript" class="init">$(document).ready(function() {$('#example').DataTable();} );</script>
+  
+  <!-- navigator menu dropdown-->
+  <script class="include" type="text/javascript" src="assets/js/jquery.dcjqaccordion.2.7.js"></script> 
+  
+    <!-- smooth scrollbar -->
+  <script src="assets/js/jquery.scrollTo.min.js"></script>
+    <script src="assets/js/jquery.nicescroll.js" type="text/javascript"></script>
+    
+  <!-- line graph -->
+  <!--
+  <script src="<?php echo base_url();?>assets/js/jquery.sparkline.js"></script>
+  -->
+  
+  <!--common script for all pages-->
+    <script src="assets/js/common-scripts.js"></script>
+  
+    <!-- notification -->
+  <!-- 
+  <script type="text/javascript" src="<?php echo base_url();?>assets/js/gritter/js/jquery.gritter.js"></script>
+    <script type="text/javascript" src="<?php echo base_url();?>assets/js/gritter-conf.js"></script>
+  -->
+    
+</BODY>
+</HTML>
