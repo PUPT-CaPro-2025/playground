@@ -21,13 +21,17 @@ export class VisitorReportComponent {
     const imgHeight = 15; // Height of the image in mm
     const xOffset = (pageWidth - imgWidth) / 2; // Calculate the xOffset to center the image
     
-    doc.addImage(this.headerImage, 'PNG', xOffset, 0, imgWidth, imgHeight);
-    
+    doc.addImage(this.headerImage, 'PNG', xOffset, 5, imgWidth, imgHeight);
 
+    // Set content below the image
+    const title = 'CLIENTS LOGBOOK'; 
+
+    doc.setFontSize(18);
+    doc.text(title, pageWidth / 2, 40, { align: 'center' });
+    
 		// Set the document header details.
 		doc.setFontSize(10);
 
-		doc.text('CLIENTS LOGBOOK', 10, 32);
 		doc.text('Sector: DOST Laboratory', 10, 38);
 		doc.text('College/Office: DOST Laboratory', 10, 44);
     doc.text('Date/Time Printed: September 4, 2024 10:00 pm', 10, 50); // Added date/time printed
